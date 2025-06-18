@@ -1,15 +1,24 @@
 import pytest
+import json
 from SaucePages.login_page import LoginPage
 import conftest
+
+
 
 @pytest.mark.usefixtures("driver")
 class TestLogin:
 
-    def test_valid_login(self, driver):
+    def load_validdata():
+        with open('TestData/valid_data.json') as f:
+            data = json.load(f)
+        return [(entry['username'],entry['password']) for entry in data]
+
+    @pytest.mark.parametrize("username, password", load_validdata())
+    def test_valid_login(self, driver,username,password):
         driver.get("https://www.saucedemo.com/")
         login_page = LoginPage(driver)
-        login_page.enter_username("standard_user")
-        login_page.enter_password("secret_sauce")
+        login_page.enter_username(username)
+        login_page.enter_password(password)
         login_page.click_login()
         assert "inventory" in driver.current_url, "User should be redirected to inventory page on successful login"
 
